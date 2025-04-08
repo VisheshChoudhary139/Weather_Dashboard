@@ -1,0 +1,11 @@
+.navbar-nav {
+  font-family: 'Inter', sans-serif;
+}
+
+.nav-link {
+  color: #EC5228 !important;
+}
+
+.nav-link:hover {
+  color: #161179 !important;
+}

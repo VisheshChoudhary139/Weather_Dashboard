@@ -1,38 +1,100 @@
-.App {
-  text-align: center;
+/* Base transition for smooth toggle */
+body, .navbar, .card, .form-control, .btn, .list-group-item, .nav-link, .navbar-brand {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* LIGHT MODE */
+body.light {
+  background-color: #f8f9fa;
+  color: #212529;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.light .navbar {
+  background-color: #ffffff;
+  color: #212529;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.light .card,
+.light .form-control,
+.light .list-group-item {
+  background-color: #ffffff;
+  color: #212529;
+  border-color: #dee2e6;
+}
+
+.light .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #ffffff;
+}
+
+/* DARK MODE */
+body.dark {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+.dark .navbar {
+  background-color: #2d2d3a;
+}
+
+.dark .nav-link,
+.dark .navbar-brand,
+.dark .form-label {
+  color: #f1f1f1 !important;
+}
+
+.dark .card,
+.dark .form-control,
+.dark .list-group-item {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+  border-color: #444;
+}
+
+.dark .btn {
+  color: #f1f1f1;
+  border-color: #f1f1f1;
+}
+
+.dark .btn-primary {
+  background-color: #3f51b5;
+  border-color: #3f51b5;
+}
+
+.dark .alert {
+  background-color: #333;
+  color: #ff6b6b;
+  border-color: #555;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #bbbbbb;
+}
+.loader-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  margin: 2rem auto;
 }
 
-.App-link {
-  color: #61dafb;
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.loading-text {
+  margin-top: 10px;
+  font-weight: bold;
+  color: inherit;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
