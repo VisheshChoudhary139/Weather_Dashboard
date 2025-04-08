@@ -4,7 +4,6 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import Search from "./Search";
 
-
 const API_KEY = "269ffbaff8bf91d2f87b0dc2de2bcf71";
 
 const Home = () => {
@@ -30,13 +29,31 @@ const Home = () => {
     const storedHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
     setHistory(storedHistory);
 
-    // Hide quote after 5 seconds
     const timer = setTimeout(() => setShowQuote(false), 5000);
     return () => clearTimeout(timer);
   }, []);
 
   const isAuthenticated = () => {
     return localStorage.getItem("auth") === "true";
+  };
+  const speakText = (text) => {
+    if ("speechSynthesis" in window) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1;
+      window.speechSynthesis.speak(utter);
+    } else {
+      console.warn("Text-to-speech not supported in this browser.");
+    }
+  };
+
+  const getAdvice = (condition) => {
+    const conditionLower = condition.toLowerCase();
+    if (conditionLower.includes("rain")) return "Don't forget your umbrella! ☔";
+    if (conditionLower.includes("clear")) return "It’s a sunny day! Sunglasses recommended 😎";
+    if (conditionLower.includes("cloud")) return "Looks a bit gloomy outside, maybe carry a light jacket.";
+    if (conditionLower.includes("snow")) return "Bundle up! It might be freezing out there ❄️";
+    if (conditionLower.includes("storm")) return "Stay safe! Better to be indoors during a storm. ⚡";
+    return "Enjoy the weather and have a great day!";
   };
 
   const fetchWeather = async (cityName) => {
@@ -50,11 +67,15 @@ const Home = () => {
       const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=metric`
       );
-      setWeather(response.data);
+      const data = response.data;
+      setWeather(data);
 
       const updatedHistory = [cityName, ...history.filter(c => c !== cityName)].slice(0, 5);
       setHistory(updatedHistory);
       localStorage.setItem("weatherHistory", JSON.stringify(updatedHistory));
+      const summary = `Weather in ${data.name}: ${data.weather[0].main}, ${data.main.temp} degrees Celsius, humidity at ${data.main.humidity} percent.`;
+      const advice = getAdvice(data.weather[0].main);
+      speakText(`${summary} ${advice}`);
     } catch (err) {
       setError("City not found or API error!");
     } finally {
@@ -78,7 +99,6 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      {/* Animated quote section */}
       {showQuote && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -96,8 +116,6 @@ const Home = () => {
           {randomQuote}
         </motion.div>
       )}
-
-      {/* Search form */}
       <form className="search-form mb-4 d-flex" onSubmit={handleSearch}>
         <input
           type="text"
@@ -117,8 +135,6 @@ const Home = () => {
           {showHistory ? "Hide History" : "Show History"}
         </button>
       </form>
-
-      {/* Loader animation */}
       {loading && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -134,11 +150,8 @@ const Home = () => {
           }}
         />
       )}
-
-      {/* Error message */}
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* Weather display */}
       {weather && (
         <div
           style={{
@@ -166,10 +179,11 @@ const Home = () => {
               objectFit: "contain",
             }}
           />
+          <div style={{ marginTop: "15px", fontStyle: "italic", color: "#555" }}>
+            💡 {getAdvice(weather.weather[0].main)}
+          </div>
         </div>
       )}
-
-      {/* History */}
       {showHistory && history.length > 0 && (
         <div className="history-section mt-4">
           <h5>🕘 Recent Searches</h5>
