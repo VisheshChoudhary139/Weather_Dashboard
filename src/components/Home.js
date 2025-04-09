@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./Home.css";
+import "./Navbar"
 import axios from "axios";
 import { motion } from "framer-motion";
 import Footer from "./Footer";
 import TemperatureChart from "./TemperatureChart";
+import Navbar from "./Navbar";
 
 const API_KEY = "269ffbaff8bf91d2f87b0dc2de2bcf71";
+let utteranceRef = null; 
+
+
 
 const Home = () => {
   const [city, setCity] = useState("");
@@ -16,7 +21,8 @@ const Home = () => {
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showQuote, setShowQuote] = useState(true);
-  const [isListening, setIsListening] = useState(false); 
+  const [isListening, setIsListening] = useState(false);
+
   const quotes = [
     "“Wherever you go, no matter what the weather, always bring your own sunshine.” ☀️",
     "“There’s no such thing as bad weather, only inappropriate clothing.” 🌧️",
@@ -39,9 +45,19 @@ const Home = () => {
 
   const speakText = (text) => {
     if ("speechSynthesis" in window) {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel(); 
+      }
       const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 1;
+      utteranceRef = utter;
       window.speechSynthesis.speak(utter);
+    }
+  };
+
+  const stopReading = () => {
+    if ("speechSynthesis" in window && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
     }
   };
 
@@ -153,23 +169,14 @@ const Home = () => {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      console.log("Listening...");
-    };
-
+    recognition.onstart = () => setIsListening(true);
     recognition.onerror = (event) => {
       console.error("Speech recognition error", event.error);
       setIsListening(false);
     };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
+    recognition.onend = () => setIsListening(false);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      console.log("Recognized:", transcript);
       setCity(transcript);
       fetchWeather(transcript);
     };
@@ -177,8 +184,22 @@ const Home = () => {
     recognition.start();
   };
 
+  const handleReadAloud = () => {
+    if (!weather) return;
+
+    const summary = `Weather in ${weather.name}. 
+      Condition: ${weather.weather[0].main}, 
+      Temperature: ${weather.main.temp} degrees Celsius, 
+      Humidity: ${weather.main.humidity} percent, 
+      Wind speed: ${weather.wind.speed} kilometers per hour.`;
+
+    const advice = getAdvice(weather.weather[0].main);
+    speakText(`${summary} ${advice}`);
+  };
+
   return (
     <div className="home-container">
+      
       {showQuote && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -196,6 +217,7 @@ const Home = () => {
           {randomQuote}
         </motion.div>
       )}
+
       <form className="search-form mb-4" onSubmit={handleSearch}>
         <div className="row g-2">
           <div className="col-12 col-md-6">
@@ -208,20 +230,19 @@ const Home = () => {
                 onChange={(e) => setCity(e.target.value)}
               />
               <button
-  type="button"
-  className={`btn btn-outline-dark rounded-circle d-flex align-items-center justify-content-center ms-2 ${isListening ? "disabled" : ""}`}
-  onClick={handleVoiceSearch}
-  title="Speak city name"
-  style={{
-    width: "45px",
-    height: "45px",
-    fontSize: "1.2rem",
-    padding: 0,
-  }}
->
-  🎤
-</button>
-
+                type="button"
+                className={`btn btn-outline-dark rounded-circle d-flex align-items-center justify-content-center ms-2 ${isListening ? "disabled" : ""}`}
+                onClick={handleVoiceSearch}
+                title="Speak city name"
+                style={{
+                  width: "45px",
+                  height: "45px",
+                  fontSize: "1.2rem",
+                  padding: 0,
+                }}
+              >
+                🎤
+              </button>
             </div>
           </div>
 
@@ -270,6 +291,7 @@ const Home = () => {
       )}
 
       {error && <div className="alert alert-danger">{error}</div>}
+
       {weather && (
         <div
           style={{
@@ -295,6 +317,15 @@ const Home = () => {
           <div style={{ marginTop: "15px", fontStyle: "italic", color: "#555" }}>
             💡 {getAdvice(weather.weather[0].main)}
           </div>
+
+          <button
+            onClick={handleReadAloud}
+            onDoubleClick={stopReading}
+            className="btn btn-warning mt-3"
+            title="Click to read aloud, double-click to stop"
+          >
+            🔊 Read Aloud
+          </button>
         </div>
       )}
 
