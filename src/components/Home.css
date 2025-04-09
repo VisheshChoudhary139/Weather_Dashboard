@@ -74,4 +74,22 @@
     background-color: #e9f0ff;
     cursor: pointer;
   }
-      
+  @media (max-width: 576px) {
+    .search-form .btn {
+      font-size: 0.9rem;
+      padding: 8px;
+    }
+  }
+
+  .custom-btn {
+    min-width: 80px;   
+    font-size: 0.95rem;
+    padding: 10px 0;
+    white-space: nowrap;
+  }
+  button {
+    min-height: 42px;
+    font-size: 0.95rem;
+  }
+  
+  
